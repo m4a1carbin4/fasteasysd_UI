@@ -84,7 +84,7 @@ class Worker(QRunnable):
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
-        self.setWindowTitle("ChamChamAI CPU")
+        self.setWindowTitle("FastEasySD CPU")
         self.setFixedSize(QSize(530, 600))
         self.init_ui()
         self.fesd = fesd.FastEasySD(device='cpu',use_fp16=False)
@@ -97,6 +97,7 @@ class MainWindow(QMainWindow):
         print(f"Output path : { self.output_path}")
         self.base_model.setEnabled(True)
         self.model_changed = True
+        self.use_lora = False
         self.previous_model = ""
 
     def init_ui(self):
@@ -111,7 +112,7 @@ class MainWindow(QMainWindow):
         #self.img.setFixedSize(QSize(512, 512))
 
         self.prompt = QTextEdit()
-        self.prompt.setPlaceholderText("sharp details, sharp focus, masterpiece, best quality, chamcham(twitch)")
+        self.prompt.setPlaceholderText("add postive prompt : masterpiece, best quality, chamcham(twitch), hair bell, hair ribbon, multicolored hair, two-tone hair, 1girl, solo,")
         self.generate = QPushButton("Generate")
         self.generate.clicked.connect(self.text_to_image)
         self.prompt.setFixedHeight(35)
@@ -119,10 +120,18 @@ class MainWindow(QMainWindow):
         hlayout = QHBoxLayout()
         hlayout.addWidget(self.prompt)
         hlayout.addWidget(self.generate)
+        
+        self.n_prompt = QTextEdit()
+        self.n_prompt.setPlaceholderText("add negative prompt : ex :) bad hand,text,watermark,low quality,medium quality")
+        self.n_prompt.setFixedHeight(35)
+        
+        hnlayout = QHBoxLayout()
+        hnlayout.addWidget(self.n_prompt)
 
         vlayout = QVBoxLayout()
         vlayout.addWidget(self.img)
         vlayout.addLayout(hlayout)
+        vlayout.addLayout(hnlayout)
 
         self.tab_widget = QTabWidget(self)
         self.tab_main = QWidget()
@@ -159,10 +168,13 @@ class MainWindow(QMainWindow):
         model_hlayout.addWidget(self.find_model)
         
         lora_hlayout = QHBoxLayout()
-        self.lora_model_label = QLabel("chamcham_lora:")
+        self.lora_check = QCheckBox("Use lora")
+        self.lora_check.stateChanged.connect(self.lora_changed)
+        self.lora_model_label = QLabel("lora:")
         self.lora_model = QLineEdit("./chamcham_new_train_lora_2-000001.safetensors")
         self.find_lora = QPushButton("find lora")
         self.find_lora.clicked.connect(self.find_lora_src)
+        lora_hlayout.addWidget(self.lora_check)
         lora_hlayout.addWidget(self.lora_model_label)
         lora_hlayout.addWidget(self.lora_model)
         lora_hlayout.addWidget(self.find_lora)
@@ -234,7 +246,7 @@ class MainWindow(QMainWindow):
         self.label = QLabel()
         self.label.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.label.setText(
-            """<h1>Chamcham AI CPU v0.0.1</h1> 
+            """<h1>FasteasySD_UI v0.0.1</h1> 
                <h3> GUI origin (c)2023 - Rupesh Sreeraman</h3>
                <h3> chamcham AI dev (c)2023 - WGNW_MGM</h3>
                 <h3>Faster stable diffusion or stable diffusion XL on CPU</h3>
@@ -260,9 +272,18 @@ class MainWindow(QMainWindow):
         else:
             self.use_seed = False
             self.seed_value.setEnabled(False)
+            
+    def lora_changed(self, state):
+        if state == 2:
+            self.use_lora = True
+        else:
+            self.use_lora = False
+        
+        self.model_changed = True
 
     def generate_image(self):
         prompt = self.prompt.toPlainText()
+        n_prompt = self.n_prompt.toPlainText()
         guidance_scale = round(int(self.guidance.value()) / 10, 1)
         img_width = int(self.width.currentText())
         img_height = int(self.height.currentText())
@@ -292,12 +313,22 @@ class MainWindow(QMainWindow):
             self.fesd.makeSampler()
             self.model_changed = False
         
-        images = self.fesd.make(mode="txt2img",
-                model_type=self.type.currentText(),model_path=self.base_model.text(),
-                lora_path=os.path.dirname(self.lora_model.text()),lora_name=os.path.basename(self.lora_model.text()),
-                prompt=prompt,
-                n_prompt="bad hand,text,watermark,low quality,medium quality,blurry,censored,wrinkles,deformed,mutated text,watermark,low quality,medium quality,blurry,censored,wrinkles,deformed,mutated",
-                seed=cur_seed,steps=num_inference_steps,cfg=guidance_scale,height=img_height,width=img_width)
+        if self.use_lora:
+        
+            images = self.fesd.make(mode="txt2img",
+                    model_type=self.type.currentText(),model_path=self.base_model.text(),
+                    lora_path=os.path.dirname(self.lora_model.text()),lora_name=os.path.basename(self.lora_model.text()),
+                    prompt=prompt,
+                    n_prompt=n_prompt,
+                    seed=cur_seed,steps=num_inference_steps,cfg=guidance_scale,height=img_height,width=img_width)
+            
+        else :
+            images = self.fesd.make(mode="txt2img",
+                    model_type=self.type.currentText(),model_path=self.base_model.text(),
+                    #lora_path=os.path.dirname(self.lora_model.text()),lora_name=os.path.basename(self.lora_model.text()),
+                    prompt=prompt,
+                    n_prompt=n_prompt,
+                    seed=cur_seed,steps=num_inference_steps,cfg=guidance_scale,height=img_height,width=img_width)
                 
         if not os.path.exists(self.output_path):
             os.mkdir(self.output_path)
@@ -308,7 +339,7 @@ class MainWindow(QMainWindow):
         print(f"Image {image_id}.png saved")
         im = ImageQt(images[0]).copy()
         pixmap = QPixmap.fromImage(im)
-        pixmap = pixmap.scaled(QSize(512,768),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
+        pixmap = pixmap.scaled(QSize(img_width,img_height),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
         self.img.setPixmap(pixmap)
         self.setFixedSize(self.tab_main.sizeHint())
         self.previous_width = img_width
