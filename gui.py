@@ -341,7 +341,7 @@ class MainWindow(QMainWindow):
         pixmap = QPixmap.fromImage(im)
         pixmap = pixmap.scaled(QSize(img_width,img_height),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
         self.img.setPixmap(pixmap)
-        self.setFixedSize(self.tab_main.sizeHint())
+        #self.setFixedSize(self.tab_main.sizeHint())
         self.previous_width = img_width
         self.previous_height = img_height
         self.previous_model = "milkyWonderland_v20.safetensors"
