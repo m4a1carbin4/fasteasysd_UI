@@ -87,18 +87,18 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("FastEasySD CPU")
         self.setFixedSize(QSize(530, 600))
         self.init_ui()
-        self.fesd = fesd.FastEasySD(device='cpu',use_fp16=False)
         self.threadpool = QThreadPool()
         self.output_path = get_results_path()
-        self.device = "cpu"
         self.seed_value.setEnabled(False)
         self.previous_width = 0
         self.previous_height = 0
         print(f"Output path : { self.output_path}")
         self.base_model.setEnabled(True)
+        self.fesd = None
         self.model_changed = True
         self.use_lora = False
         self.previous_model = ""
+        self.device_changed = True
 
     def init_ui(self):
         self.create_main_tab()
@@ -147,6 +147,16 @@ class MainWindow(QMainWindow):
         self.use_seed = False
 
     def create_settings_tab(self):
+        device_hlayout = QHBoxLayout()
+        self.device_label = QLabel("Model Type:")
+        self.device = QComboBox(self)
+        self.device.addItem("cpu")
+        self.device.addItem("cuda")
+        self.device.currentIndexChanged.connect(self.device_update)
+        
+        device_hlayout.addWidget(self.device_label)
+        device_hlayout.addWidget(self.device)
+        
         model_type_hlayout = QHBoxLayout()
         self.model_type_label = QLabel("Model Type:")
         self.type = QComboBox(self)
@@ -226,6 +236,7 @@ class MainWindow(QMainWindow):
         vlayout = QVBoxLayout()
         vspacer = QSpacerItem(20, 20, QSizePolicy.Policy.Minimum, QSizePolicy.Policy.Expanding)
         vlayout.addItem(hspacer)
+        vlayout.addLayout(device_hlayout)
         vlayout.addLayout(model_type_hlayout)
         vlayout.addLayout(model_hlayout)
         vlayout.addLayout(lora_hlayout)
@@ -280,8 +291,22 @@ class MainWindow(QMainWindow):
             self.use_lora = False
         
         self.model_changed = True
+        
+    def device_update(self):
+        self.device_changed = True
 
     def generate_image(self):
+        
+        if self.device_changed and self.device.currentText() == "cpu":
+            self.fesd = fesd.FastEasySD(device='cpu',use_fp16=False)
+            print("cpu pipeline")
+            self.device_changed = False
+            
+        elif self.device_changed and self.device.currentText() == "cuda":
+            self.fesd = fesd.FastEasySD(device='cuda',use_fp16=True)
+            print("cuda pipeline")
+            self.device_changed = False
+        
         prompt = self.prompt.toPlainText()
         n_prompt = self.n_prompt.toPlainText()
         guidance_scale = round(int(self.guidance.value()) / 10, 1)
@@ -291,10 +316,7 @@ class MainWindow(QMainWindow):
 
         if self.use_seed:
             cur_seed = int(self.seed_value.text())
-            if self.use_openvino:
-                np.random.seed(cur_seed)
-            else:
-                torch.manual_seed(cur_seed)
+            torch.manual_seed(cur_seed)
         else :
             cur_seed = int(0)
 
@@ -309,7 +331,7 @@ class MainWindow(QMainWindow):
 
         image_id = uuid4()
         
-        if self.model_changed :
+        if self.model_changed and self.fesd is not None:
             self.fesd.makeSampler()
             self.model_changed = False
         
