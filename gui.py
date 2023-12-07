@@ -368,7 +368,7 @@ class MainWindow(QMainWindow):
         self.threadpool.start(worker)
         self.threadpool.waitForDone(-1)
         pixmap = QPixmap.fromImage(self.im)
-        pixmap = pixmap.scaled(QSize(512,768),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
+        pixmap = pixmap.scaled(QSize(512,768),aspectRatioMode=Qt.AspectRatioModeQt.KeepAspectRatio,transformMode=Qt.TransformationMode.FastTransformation)
         self.img.setPixmap(pixmap)
         self.setFixedSize(self.tab_main.sizeHint())
         self.previous_model = "milkyWonderland_v20.safetensors"
