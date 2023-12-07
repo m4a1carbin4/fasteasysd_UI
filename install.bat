@@ -1,7 +1,7 @@
 
 @echo off
 setlocal
-echo Starting FastSD CPU env installation...
+echo Starting FastEasySD_UI env installation...
 
 set "PYTHON_COMMAND=python"
 
@@ -24,5 +24,5 @@ echo Python version: %python_version%
 
 %PYTHON_COMMAND% -m venv "%~dp0env" 
 call "%~dp0env\Scripts\activate.bat" && pip install -r "%~dp0requirements.txt"
-echo FastSD CPU env installation completed.
+echo FastEasySD_UI env installation completed.
 pause
