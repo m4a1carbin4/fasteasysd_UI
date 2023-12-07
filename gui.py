@@ -149,7 +149,7 @@ class MainWindow(QMainWindow):
 
     def create_settings_tab(self):
         device_hlayout = QHBoxLayout()
-        self.device_label = QLabel("Model Type:")
+        self.device_label = QLabel("HW Type:")
         self.device = QComboBox(self)
         self.device.addItem("cpu")
         self.device.addItem("cuda")

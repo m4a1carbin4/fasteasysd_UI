@@ -13,7 +13,7 @@ if ! command -v python3 &>/dev/null; then
 fi
 
 if command -v python &>/dev/null; then
-   PYTHON_COMMAND="python3"
+   PYTHON_COMMAND="python"
 fi
 
 echo "Found $PYTHON_COMMAND command"
