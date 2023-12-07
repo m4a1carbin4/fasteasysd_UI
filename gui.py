@@ -367,10 +367,8 @@ class MainWindow(QMainWindow):
         worker = Worker(self.generate_image)
         self.threadpool.start(worker)
         self.threadpool.waitForDone(-1)
-        img_width = int(self.width.currentText())
-        img_height = int(self.height.currentText())
         pixmap = QPixmap.fromImage(self.im)
-        pixmap = pixmap.scaled(QSize(img_width,img_height),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
+        pixmap = pixmap.scaled(QSize(512,768),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
         self.img.setPixmap(pixmap)
         self.setFixedSize(self.tab_main.sizeHint())
         self.previous_width = img_width
