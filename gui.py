@@ -371,8 +371,6 @@ class MainWindow(QMainWindow):
         pixmap = pixmap.scaled(QSize(512,768),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
         self.img.setPixmap(pixmap)
         self.setFixedSize(self.tab_main.sizeHint())
-        self.previous_width = img_width
-        self.previous_height = img_height
         self.previous_model = "milkyWonderland_v20.safetensors"
         
     def find_model_src(self):
