@@ -99,6 +99,7 @@ class MainWindow(QMainWindow):
         self.use_lora = False
         self.previous_model = ""
         self.device_changed = True
+        self.im = None
 
     def init_ui(self):
         self.create_main_tab()
