@@ -1,6 +1,6 @@
 @echo off
 setlocal
-echo Starting fastsdcpu...
+echo Starting FastEasySD_UI...
 
 set "PYTHON_COMMAND=python"
 
