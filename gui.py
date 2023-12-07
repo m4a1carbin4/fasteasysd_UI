@@ -359,19 +359,22 @@ class MainWindow(QMainWindow):
 
         images[0].save(os.path.join(self.output_path, f"{image_id}.png"))
         print(f"Image {image_id}.png saved")
-        im = ImageQt(images[0]).copy()
-        pixmap = QPixmap.fromImage(im)
+        self.im = ImageQt(images[0]).copy()
+
+    def text_to_image(self):
+        self.img.setText("Please wait...")
+        worker = Worker(self.generate_image)
+        self.threadpool.start(worker)
+        self.threadpool.waitForDone(-1)
+        img_width = int(self.width.currentText())
+        img_height = int(self.height.currentText())
+        pixmap = QPixmap.fromImage(self.im)
         pixmap = pixmap.scaled(QSize(img_width,img_height),aspectRatioMode=Qt.AspectRatioMode.KeepAspectRatioByExpanding,transformMode=Qt.TransformationMode.FastTransformation)
         self.img.setPixmap(pixmap)
         self.setFixedSize(self.tab_main.sizeHint())
         self.previous_width = img_width
         self.previous_height = img_height
         self.previous_model = "milkyWonderland_v20.safetensors"
-
-    def text_to_image(self):
-        self.img.setText("Please wait...")
-        worker = Worker(self.generate_image)
-        self.threadpool.start(worker)
         
     def find_model_src(self):
         model_src=QFileDialog.getOpenFileName(self)
