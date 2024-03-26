@@ -1,4 +1,4 @@
-from fasteasySD import fasteasySD as fesd
+from fasteasySD import fesd
 import torch
 import sys
 from PyQt6.QtWidgets import (
@@ -299,12 +299,12 @@ class MainWindow(QMainWindow):
     def generate_image(self):
         
         if self.device_changed and self.device.currentText() == "cpu":
-            self.fesd = fesd.FastEasySD(device='cpu',use_fp16=False)
+            self.fesd = fesd(device='cpu',use_fp16=False,mode=self.type.currentText(),img2img=False)
             print("cpu pipeline")
             self.device_changed = False
             
         elif self.device_changed and self.device.currentText() == "cuda":
-            self.fesd = fesd.FastEasySD(device='cuda',use_fp16=True)
+            self.fesd = fesd(device='cuda',use_fp16=True,mode=self.type.currentText(),img2img=False)
             print("cuda pipeline")
             self.device_changed = False
         
@@ -333,21 +333,19 @@ class MainWindow(QMainWindow):
         image_id = uuid4()
         
         if self.model_changed and self.fesd is not None:
-            self.fesd.makeSampler()
+            #self.fesd.makeSampler()
             self.model_changed = False
         
         if self.use_lora:
         
-            images = self.fesd.make(mode="txt2img",
-                    model_type=self.type.currentText(),model_path=self.base_model.text(),
+            images = self.fesd.make(model_path=self.base_model.text(),
                     lora_path=os.path.dirname(self.lora_model.text()),lora_name=os.path.basename(self.lora_model.text()),
                     prompt=prompt,
                     n_prompt=n_prompt,
                     seed=cur_seed,steps=num_inference_steps,cfg=guidance_scale,height=img_height,width=img_width)
             
         else :
-            images = self.fesd.make(mode="txt2img",
-                    model_type=self.type.currentText(),model_path=self.base_model.text(),
+            images = self.fesd.make(model_path=self.base_model.text(),
                     #lora_path=os.path.dirname(self.lora_model.text()),lora_name=os.path.basename(self.lora_model.text()),
                     prompt=prompt,
                     n_prompt=n_prompt,

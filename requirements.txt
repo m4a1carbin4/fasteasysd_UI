@@ -1,2 +1,6 @@
 fasteasySD>=0.1.7
 pyqt6
+PEFT
+onnx
+onnxruntime
+optimum
